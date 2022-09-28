@@ -1,0 +1,155 @@
+(Get Image form Url)
+
+1) xml code 
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch Url Into Image"
+       android:layout_marginTop="20dp"
+        android:textStyle="bold"
+        android:textSize="40sp"
+        android:textColor="@color/black"
+        android:fontFamily="sans-serif-condensed-medium"
+        android:id="@+id/tv1"
+        android:layout_centerHorizontal="true"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:src="@mipmap/ic_launcher"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/tv1"
+        android:layout_marginTop="20dp"
+        android:id="@+id/image1"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:id="@+id/etid1"
+        android:layout_below="@id/image1"
+        android:layout_marginTop="20dp"
+        android:hint="enter url here"
+        android:layout_marginLeft="10dp"
+        android:textStyle="bold"
+
+        android:padding="20dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/etid1"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:id="@+id/btnclear"
+        android:text="clear data"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+    <Button
+        android:id="@+id/btnconvert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/etid1"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Convert url"
+        android:layout_marginRight="10dp"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+
+</RelativeLayout>
+
+2) Ux Code  MainActivity
+
+
+public class MainActivity extends AppCompatActivity {
+    CircleImageView image1;
+    Button btnclear,btnconvert;
+    EditText etid1;
+    Handler mainhandler= new Handler();
+    ProgressDialog progressDialog;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        image1 = findViewById(R.id.image1);
+        btnclear = findViewById(R.id.btnclear);
+        btnconvert = findViewById(R.id.btnconvert);
+        etid1 = findViewById(R.id.etid1);
+
+        btnconvert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+            String url = etid1.getText().toString();
+            new fetchImage(url).start();
+
+            etid1.setText("");
+            }
+        });
+
+
+
+
+        btnclear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                etid1.setText("");
+                image1.setImageBitmap(null);
+
+            }
+        });
+    }
+    class fetchImage extends Thread{
+        String URL;
+        Bitmap bitmap;
+
+            fetchImage(String URL){
+                this.URL = URL;
+
+            }
+            @Override
+            public void run(){
+//                super.run();
+                mainhandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog = new ProgressDialog(MainActivity.this);
+                        progressDialog.setMessage("gatting your pic");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+
+                    }
+                });
+                InputStream inputStream = null;
+                try {
+                    inputStream = new java.net.URL(URL).openStream();
+                    bitmap = BitmapFactory.decodeStream(inputStream);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                mainhandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                       if (progressDialog.isShowing())
+                           progressDialog.dismiss();
+                       image1.setImageBitmap(bitmap);
+                    }
+                });
+
+
+
+
+            }
+
+    }
+
